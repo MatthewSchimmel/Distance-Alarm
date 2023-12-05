@@ -1,33 +1,7 @@
-/*  Written by Matthew Ryan Schimmel in December of 2023
-  matthewschimmel.site, 
-*/
-#include <Arduino_GFX_Library.h>
-#define TFT_SCK    3
-#define TFT_MOSI   17
-#define TFT_MISO   8
-#define TFT_CS     16
-#define TFT_DC     15
-#define TFT_RESET  7
-Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCK, TFT_MOSI, TFT_MISO);
-Arduino_ILI9341 display = Arduino_ILI9341(&bus, TFT_RESET);
-
-#define blueLight 34
-#define redLight 33
-
-//Led's for the distance indicator
-#define led1 1
-#define led2 2
-#define led3 42
-#define led4 41
-#define led5 40
-#define led6 39
-#define led7 38
-#define led8 37
-#define led9 36
-#define led10 35
-
-#define echoPin 4  // attach pin D2 Arduino to pin Echo of HC-SR04
-#define trigPin 5  // attach pin D3 Arduino to pin Trig of HC-SR04
+#define blueLight 1
+#define redLight 2
+#define echoPin 11  // attach pin D2 Arduino to pin Echo of HC-SR04
+#define trigPin 10  // attach pin D3 Arduino to pin Trig of HC-SR04
 //-- Wifi Segment --//
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -38,61 +12,26 @@ const char *password = "";
 //remember: the website to visit is: http://192.168.4.1
 WiFiServer server(80);
 //------------------//
-//touchPin: lecture 21
-//screen: lecture 21
+
 long duration;  // variable for the duration of sound wave travel
 int distance;   // variable for the distance measurement
 bool noise = true;
-String output[1] = {""};
 
 bool alternator = false;  // variable for the alarmLights method
-const int alarmButton = 0;
 const int UpButton = 16;   // GP Pin 16
 const int DownButton = 15;   // GP Pin 16
 const int speedOfSound = 0.034;
-int threshold = 3;  //in centimeters
+int threshold = 10;  //in centimeters
 
-const int buzzer = 19;  // GP Pin 3
+const int buzzer = 3;  // GP Pin 3
+const int buzzerFreq = 10;
+const int fadeAmount = 5;
 
 void setup() {
-  pinMode(alarmButton, INPUT_PULLUP);
-  pinMode(UpButton, INPUT_PULLUP);
-  pinMode(DownButton, INPUT_PULLUP);
-
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-  pinMode(led3, OUTPUT);
-  pinMode(led4, OUTPUT);
-  pinMode(led5, OUTPUT);
-  pinMode(led6, OUTPUT);
-  pinMode(led7, OUTPUT);
-  pinMode(led8, OUTPUT);
-  pinMode(led9, OUTPUT);
-  pinMode(led10, OUTPUT);
-
-  pinMode(buzzer, OUTPUT);
-  pinMode(redLight, OUTPUT);
-  pinMode(blueLight, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  setupDisplay();
-  setupServer();
-  //given code
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-
-  delay(100);
-}
-void clearScreen(){
-  display.fillScreen(BLACK);
-  display.setCursor(0, 1);
-}
-void setupServer(){
+  //-- SERVER SETUP --//
   Serial.begin(115200);
   Serial.println();
-  Serial.println("Setting A.P...");
-  display.println("Setting A.P...");
-  
+  Serial.println("Configuring access point...");
   // You can remove the password parameter if you want the AP to be open.
   // a valid password must have more than 7 characters
   if (!WiFi.softAP(ssid, password)) {
@@ -104,19 +43,23 @@ void setupServer(){
   Serial.print("AP IP address: ");
   Serial.println(myIP);
   server.begin();
-  display.print("AP IP address: ");
-  display.println(myIP);
   Serial.println("Server started");
-  display.println("Server started");
-}
+  //-- END OF SERVER SETUP --//
 
-void setupDisplay(){
-  display.begin();
-  display.fillScreen(BLACK);
-  display.setCursor(0, 1);
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.println("Display Initialized");
+  Serial.println("Ultrasonic Sensor HC-SR04 Test");  // print some text in Serial Monitor
+  Serial.println("with Arduino UNO R3");
+  //given code
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  //configure pin 16 as an input and enable the internal pull-up resistor
+  pinMode(UpButton, INPUT_PULLUP);
+  pinMode(DownButton, INPUT_PULLUP);
+
+  pinMode(buzzer, OUTPUT);
+  pinMode(redLight, OUTPUT);
+  pinMode(blueLight, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
@@ -129,13 +72,15 @@ void loop() {
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
+
   // Reads the echoPin, returns the sound wave travel time in microseconds
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.034 / 2;  // Calculating the distance
-  //checkThreshold();
-  //Prints the distance, all on one
-  clearScreen();
-  illuminateDistance(distance);
+  checkThreshold();
+  //Prints the distance, all on onel
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.print(" cm");
   triggerAlarm((distance <= threshold) || buttonIsPressed());
 
   //-- WiFi management --//
@@ -143,7 +88,6 @@ void loop() {
 
   if (client) {                     // if you get a client,
     Serial.println("New Client.");  // print a message out the serial port
-    display.println("New Client.");  // print a message out the display
     String currentLine = "";        // make a String to hold incoming data from the client
     while (client.connected()) {    // loop while the client's connected
       if (client.available()) {     // if there's bytes to read from the client,
@@ -175,8 +119,6 @@ void loop() {
           currentLine += c;      // add it to the end of the currentLine
         }
 
-        //IDEA: JUST SET CURSOR AND PRINT LINE IN BLACK COLOR TO CLEAR A LINE
-
         // Check to see if the client request was "GET /H" or "GET /L":
         if (currentLine.endsWith("GET /H")) {
           noise = true;
@@ -189,28 +131,8 @@ void loop() {
     // close the connection:
     client.stop();
     Serial.println("Client Disconnected.");
-    display.println("Client Disconnected.");
   }
   delay(250);
-}
-
-void displayPrint(string newline){
-  shiftLines();
-  output[19] = newline;
-  printOutput();
-}
-void shiftLines(){
-  for (int i = 0; i < 18; i++){//iterates through every index but the last
-    output[i] = output[i + 1];
-  }
-  output[19] = "";
-}
-void printOutput(){
-  clearScreen();
-  for (string line: output){
-    Serial.println(line);
-    display.println(line);
-  }
 }
 
 void checkThreshold() {
@@ -218,12 +140,15 @@ void checkThreshold() {
   int DownButtonVal = digitalRead(DownButton);  //param = button GP pin
   if (UpButtonVal == LOW && threshold > 10) {                //if button is pressed
     threshold -= 10;
-    displayPrint("Threshold decreased to " + threshold + "cm")
+    Serial.print("Threshold decreased to ");
+    Serial.println(threshold);
     flash(threshold / 10);
   }
   if (DownButtonVal == LOW) {  //if button is pressed
     threshold += 10;
-    displayPrint("Threshold increased to " + threshold + "cm")
+    Serial.print("Threshold increased to ");
+    Serial.print(threshold);
+    Serial.println("cm");
     flash(threshold / 10);
   }
 }
@@ -238,12 +163,15 @@ void flash(int iterations){
 }
 
 bool buttonIsPressed() {
-  int buttonVal = digitalRead(alarmButton);  //param = button GP pin
-  if (buttonVal == LOW) {                    //if button is pressed
+  return false;
+  /*
+  int sensorVal = digitalRead(UpButton);  //param = button GP pin
+  if (sensorVal == LOW) {                //if button is pressed
     return true;
   } else {
     return false;
   }
+  */
 }
 
 
@@ -253,19 +181,10 @@ void triggerAlarm() {
 }
 //prints the message right after distance is printed
 void triggerAlarm(bool trigger) {
-  String s1 = "Dist: ";
-  String s2 = String(distance);
-  String s3 = " cm";
-  output[0] = s1 + s2 + s3;
-  Serial.println(output[0]);
-  display.println(output[0]);
   if (trigger == true) {
-    // Serial.println(", Alarm Triggered! >:(");
-    // display.println(", Alarm Triggered! >:(");
+    Serial.println(", Alarm Triggered! >:(");
   } else {
-    // Serial.println(" :)");
-    // display.println(" :)");
-    displayPrint(int newline)
+    Serial.println("  :)");
   }
   alarmLights(trigger);
 }
@@ -274,14 +193,14 @@ void alarmLights(bool trigger) {
   if (trigger == true) {
     if (alternator == false) {
       if (noise) {
-        digitalWrite(buzzer, HIGH);  //buzzer on
+        digitalWrite(buzzer, 10);  // turn buzzer on
       }
-      digitalWrite(redLight, LOW);   //red off
-      digitalWrite(blueLight, HIGH); //blue on
+      digitalWrite(redLight, LOW);    //red off
+      digitalWrite(blueLight, HIGH);  //blue on
       alternator = true;
     } else {
       if (noise) {
-        digitalWrite(buzzer, HIGH);  //buzzer on
+        digitalWrite(buzzer, 5);  // turn buzzer on
       }
       digitalWrite(blueLight, LOW);  //blue off
       digitalWrite(redLight, HIGH);  //red on
@@ -292,60 +211,4 @@ void alarmLights(bool trigger) {
     digitalWrite(blueLight, LOW);  //blue off
     digitalWrite(redLight, LOW);   //red off
   }
-}
-
-void illuminateDistance(int distance){
-   illuminateDistance(distance, .3);
-}
-void illuminateDistance(int distance, double ratio){
-  double interval = threshold * ratio;
-  int numOfLights;
-  if(buttonIsPressed()){
-    numOfLights = 10;
-  } else {
-    numOfLights = 10 - ((distance - threshold) / interval); //the closer to threshold, the more lights
-  }
-  clearTheLights();
-  if(numOfLights > 0){
-    digitalWrite(led1, HIGH);  //led on
-  }
-  if(numOfLights > 1){
-    digitalWrite(led2, HIGH);  //led on
-  }
-  if(numOfLights > 2){
-    digitalWrite(led3, HIGH);  //led on
-  }
-  if(numOfLights > 3){
-    digitalWrite(led4, HIGH);  //led on
-  }
-  if(numOfLights > 4){
-    digitalWrite(led5, HIGH);  //led on
-  }
-  if(numOfLights > 5){
-    digitalWrite(led6, HIGH);  //led on
-  }
-  if(numOfLights > 6){
-    digitalWrite(led7, HIGH);  //led on
-  }
-  if(numOfLights > 7){
-    digitalWrite(led8, HIGH);  //led on
-  }
-  if(numOfLights > 8){
-    digitalWrite(led9, HIGH);  //led on
-  }
-  if(numOfLights > 9){
-    digitalWrite(led10, HIGH);  //led on
-  }
-}
-void clearTheLights(){
-  digitalWrite(led1, LOW);  //led off
-  digitalWrite(led2, LOW);  //led off
-  digitalWrite(led3, LOW);  //led off
-  digitalWrite(led4, LOW);  //led off
-  digitalWrite(led5, LOW);  //led off
-  digitalWrite(led6, LOW);  //led off
-  digitalWrite(led7, LOW);  //led off
-  digitalWrite(led8, LOW);  //led off
-  digitalWrite(led9, LOW);  //led off
-  digitalWrite(led10, LOW);  //led off
 }
