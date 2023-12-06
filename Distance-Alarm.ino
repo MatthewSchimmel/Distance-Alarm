@@ -43,14 +43,14 @@ WiFiServer server(80);
 long duration;  // variable for the duration of sound wave travel
 int distance;   // variable for the distance measurement
 bool noise = true;
-String output[1] = {""};
+String output[20] = {"","","","","","","","","","","","","","","","","","","",""};
 
 bool alternator = false;  // variable for the alarmLights method
 const int alarmButton = 0;
 const int UpButton = 16;   // GP Pin 16
 const int DownButton = 15;   // GP Pin 16
 const int speedOfSound = 0.034;
-int threshold = 3;  //in centimeters
+int threshold = 5;  //in centimeters
 
 const int buzzer = 19;  // GP Pin 3
 
@@ -87,28 +87,6 @@ void clearScreen(){
   display.fillScreen(BLACK);
   display.setCursor(0, 1);
 }
-void setupServer(){
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("Setting A.P...");
-  display.println("Setting A.P...");
-  
-  // You can remove the password parameter if you want the AP to be open.
-  // a valid password must have more than 7 characters
-  if (!WiFi.softAP(ssid, password)) {
-    log_e("Soft AP creation failed.");
-    while (1)
-      ;
-  }
-  IPAddress myIP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(myIP);
-  server.begin();
-  display.print("AP IP address: ");
-  display.println(myIP);
-  Serial.println("Server started");
-  display.println("Server started");
-}
 
 void setupDisplay(){
   display.begin();
@@ -117,6 +95,27 @@ void setupDisplay(){
   display.setTextSize(2);
   display.setTextColor(WHITE);
   display.println("Display Initialized");
+}
+
+void setupServer(){
+  Serial.begin(115200);
+  displayPrint("Setting A.P...");
+  // You can remove the password parameter if you want the AP to be open.
+  // a valid password must have more than 7 characters
+  if (!WiFi.softAP(ssid, password)) {
+    log_e("Soft AP creation failed.");
+    while (1)
+      ;
+  }
+  IPAddress myIP = WiFi.softAPIP();
+  //This part cannot be obfuscated through displayPrint, so don't try.
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
+  Serial.println("Server started");
+  display.print("AP IP address: ");
+  display.println(myIP);
+  display.println("Server started");
+  server.begin();
 }
 
 void loop() {
@@ -175,8 +174,6 @@ void loop() {
           currentLine += c;      // add it to the end of the currentLine
         }
 
-        //IDEA: JUST SET CURSOR AND PRINT LINE IN BLACK COLOR TO CLEAR A LINE
-
         // Check to see if the client request was "GET /H" or "GET /L":
         if (currentLine.endsWith("GET /H")) {
           noise = true;
@@ -194,23 +191,23 @@ void loop() {
   delay(250);
 }
 
-void displayPrint(string newline){
+void displayPrint(String newline){
   shiftLines();
-  output[19] = newline;
+  output[0] = newline;
   printOutput();
 }
 void shiftLines(){
-  for (int i = 0; i < 18; i++){//iterates through every index but the last
-    output[i] = output[i + 1];
+  for (int i = 19; i > 0; i--){//iterates through every index but the last
+    output[i] = output[i - 1];
   }
-  output[19] = "";
+  output[0] = "";
 }
 void printOutput(){
   clearScreen();
-  for (string line: output){
-    Serial.println(line);
+  for (String line: output){
     display.println(line);
   }
+  Serial.println(output[0]);
 }
 
 void checkThreshold() {
@@ -218,12 +215,12 @@ void checkThreshold() {
   int DownButtonVal = digitalRead(DownButton);  //param = button GP pin
   if (UpButtonVal == LOW && threshold > 10) {                //if button is pressed
     threshold -= 10;
-    displayPrint("Threshold decreased to " + threshold + "cm")
+    //displayPrint("Threshold decreased to " + threshold + "cm")
     flash(threshold / 10);
   }
   if (DownButtonVal == LOW) {  //if button is pressed
     threshold += 10;
-    displayPrint("Threshold increased to " + threshold + "cm")
+    //displayPrint("Threshold increased to " + threshold + "cm")
     flash(threshold / 10);
   }
 }
@@ -253,20 +250,25 @@ void triggerAlarm() {
 }
 //prints the message right after distance is printed
 void triggerAlarm(bool trigger) {
-  String s1 = "Dist: ";
-  String s2 = String(distance);
-  String s3 = " cm";
-  output[0] = s1 + s2 + s3;
-  Serial.println(output[0]);
-  display.println(output[0]);
+  String output = "Distance: ";
+  output += String(distance);
+  output += "cm";
   if (trigger == true) {
-    // Serial.println(", Alarm Triggered! >:(");
-    // display.println(", Alarm Triggered! >:(");
+    display.setTextColor(RED);
+    output += " >:(";
+    displayPrint(output);
   } else {
-    // Serial.println(" :)");
-    // display.println(" :)");
-    displayPrint(int newline)
+    if (getNumOfLights() > 6) {
+      output += " :|";
+      display.setTextColor(YELLOW);
+    } else {
+    output += " :)";
+      display.setTextColor(GREEN);
+    }
+    displayPrint(output);
   }
+  Serial.print(output[0]);
+  display.print(output[0]);
   alarmLights(trigger);
 }
 // illuminates two lights in an alternating fashion. Buzzer included as well.
@@ -294,17 +296,11 @@ void alarmLights(bool trigger) {
   }
 }
 
-void illuminateDistance(int distance){
-   illuminateDistance(distance, .3);
+void illuminateDistance(){
+   illuminateDistance(.3);
 }
-void illuminateDistance(int distance, double ratio){
-  double interval = threshold * ratio;
-  int numOfLights;
-  if(buttonIsPressed()){
-    numOfLights = 10;
-  } else {
-    numOfLights = 10 - ((distance - threshold) / interval); //the closer to threshold, the more lights
-  }
+void illuminateDistance(double ratio){
+  int numOfLights = getNumOfLights(ratio);
   clearTheLights();
   if(numOfLights > 0){
     digitalWrite(led1, HIGH);  //led on
@@ -335,6 +331,17 @@ void illuminateDistance(int distance, double ratio){
   }
   if(numOfLights > 9){
     digitalWrite(led10, HIGH);  //led on
+  }
+}
+int getNumOfLights(){
+  return getNumOfLights(0.3);
+}
+int getNumOfLights(double ratio){//algorithm determines how many thresholds away the user is
+double interval = threshold * ratio;
+  if(buttonIsPressed()){
+    return 10;
+  } else {
+    return 10 - ((distance - threshold) / interval); //the closer to threshold, the more lights
   }
 }
 void clearTheLights(){
