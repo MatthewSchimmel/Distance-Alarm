@@ -6,10 +6,19 @@
 - Alarm is **flashing lights** plus a **loud buzzer**
 - Buzzer can be silenced through **website** hosted on its **wireless access point**
 - Distance and more feedback info is available in the **serial monitor** (terminal-like window) of the Arduino IDE
-- Distance and more feedback info is also now available on an LCD screen
+- Distance & more feedback _also_ now available on the **LCD screen**
+
 ![overview](https://github.com/MatthewSchimmel/Distance-Alarm/assets/73368670/e9390608-ba7b-4273-82fb-cc65acb80ddd)
 
 For more details, see [The Google Drive Archive](https://drive.google.com/drive/folders/1CFX-yMwEwAK_sQh939BAlln6E_xA1zw2?usp=sharing)
+
+## Future Plans
+- Website - Get it up and running with Arduino.io
+  - Add input box for any threshold
+  - Make it all pretty with gauges for distance
+- Come up with new terminal display method - filling w/black and printing a 20 line array causes stutter
+  - Perhaps a simple numerical display would suffice
+
 ## Canvas Assignment Specifications:
 ### Final Project
 Pick a problem or need and use Design Thinking to propose, develop and prototype an embedded design to solve that problem using a Raspberry Pi Pico or an ESP32 and using the techniques we have covered. Combining multiple processors is fine and may garner extra credit, but both must be running code you have written.
