@@ -41,8 +41,8 @@ WiFiServer server(80);
 String html ="<!DOCTYPE html> \
 <html> \
 <body> \
-<center><h1>ESP32 Soft access point</h1></center> \
-<center><h2>Web Server</h2></center> \
+<center><h1>Distance Alarm Remote Control</h1></center> \
+<center><h2>ESP32S2 Web Server Access Point</h2></center> \
 <form> \
 <button name=\"NOISE\" button style=\"color:green\" value=\"ON\" type=\"submit\">NOISE ON</button> \
 <button name=\"NOISE\" button style=\"color=red\" value=\"OFF\" type=\"submit\">NOISE OFF</button><br><br> \
