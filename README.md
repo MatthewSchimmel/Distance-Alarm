@@ -7,7 +7,7 @@
 - Buzzer can be silenced through **website** hosted on its **wireless access point**
 - Distance and more feedback info is available in the **serial monitor** (terminal-like window) of the Arduino IDE
 - Distance and more feedback info is also now available on an LCD screen
-![bruuuuh](https://github.com/MatthewSchimmel/Distance-Alarm/assets/73368670/4ae6273c-6638-4db7-a071-e720181606bf)
+![overview](https://github.com/MatthewSchimmel/Distance-Alarm/assets/73368670/e9390608-ba7b-4273-82fb-cc65acb80ddd)
 
 For more details, see [The Google Drive Archive](https://drive.google.com/drive/folders/1CFX-yMwEwAK_sQh939BAlln6E_xA1zw2?usp=sharing)
 ## Canvas Assignment Specifications:
