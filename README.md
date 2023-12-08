@@ -18,6 +18,7 @@ For more details, see [The Google Drive Archive](https://drive.google.com/drive/
   - Make it all pretty with gauges for distance
 - Come up with new terminal display method - filling w/black and printing a 20 line array causes stutter
   - Perhaps a simple numerical display would suffice
+- Add only necessary libraries to documentation
 
 ## Canvas Assignment Specifications:
 ### Final Project
