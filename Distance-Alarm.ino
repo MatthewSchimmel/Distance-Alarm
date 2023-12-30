@@ -6,12 +6,14 @@
 #define blueLight 34
 #define redLight 33
 
+#define buzzer 15
+
 #include <TM1637.h>
 
-// Instantiation and pins configurations for digit display
-// Pin 3 - > DIO
-// Pin 2 - > CLK
-TM1637 tm(2, 3);
+//for digit display
+#define CLK 2
+#define DIO 3
+TM1637 tm(CLK, DIO);
 
 #define echoPin 4  // attach pin D2 Arduino to pin Echo of HC-SR04
 #define trigPin 5  // attach pin D3 Arduino to pin Trig of HC-SR04
@@ -42,13 +44,8 @@ int distance;   // variable for the distance measurement
 bool noise = true;
 
 bool alternator = false;  // variable for the alarmLights method
-const int alarmButton = 0;
-const int UpButton = 16;   // GP Pin 16
-const int DownButton = 15;   // GP Pin 16
 const int speedOfSound = 0.034;
 int threshold = 10;  //in centimeters
-
-const int buzzer = 19;  // GP Pin 3
 
 void setup() {
   pinMode(buzzer, OUTPUT);
