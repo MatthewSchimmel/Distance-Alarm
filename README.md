@@ -8,3 +8,5 @@
 - Distance & more feedback _also_ now available on the **4-digit display**
 
 ![Capture](https://github.com/MatthewSchimmel/Distance-Alarm/assets/73368670/54fdcb3e-2696-4ff7-bff4-b08e200cb3fa)
+
+![Video Review and Demonstration](https://youtu.be/vt5fpE0bzSY)
