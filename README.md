@@ -7,6 +7,6 @@
 - Distance and more feedback info is available in the **serial monitor** (terminal-like window) of the Arduino IDE
 - Distance & more feedback _also_ now available on the **4-digit display**
 
-![Capture](https://github.com/MatthewSchimmel/Distance-Alarm/assets/73368670/54fdcb3e-2696-4ff7-bff4-b08e200cb3fa)
+[![Watch the video](https://github.com/MatthewSchimmel/Distance-Alarm/assets/73368670/54fdcb3e-2696-4ff7-bff4-b08e200cb3fa)](https://youtu.be/BN6skqE-5dM)
 
-![Video Review and Demonstration](https://youtu.be/vt5fpE0bzSY)
+### [Video Review and Demonstration](https://youtu.be/BN6skqE-5dM)
