@@ -1,3 +1,8 @@
+<pre>
+ _     _        _                          _                 __               
+|_)   |_) o    | \ o  _ _|_ _ __  _  _    |_| |  _  ____    (_  \/ _ _|_ _ __ 
+| \ o |   |    |_/ | _>  |_(_|| |(_ (/_   | | | (_| | |||   __) / _>  |_(/_|||
+</pre>
 # Automatic Distance Alarm System
 - Uses the **ESPRESSIF ESP32S2 microcontroller**, code written in **Arduino IDE** in **C++**
 - Computes distance from an **ultrasonic distance sensor** and speed of sound algorithm
